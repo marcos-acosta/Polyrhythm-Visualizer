@@ -1,0 +1,352 @@
+<html>
+
+<style type="text/css">
+    html {
+        background: #323232;
+        background-image: linear-gradient(270deg, #323232 0%, #323232 100%);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    canvas {
+        padding-left: 0;
+        padding-right: auto;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+
+    body {
+        background: #323232;
+        box-shadow: 0 0 2px rgba(50, 50, 50, 1);
+        color: #545454;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        margin: 0 auto;
+        max-width: 1000px;
+        padding: 2em 2em 4em;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: #222;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    h2 {
+        margin-top: 1.3em;
+    }
+
+    a {
+        color: #E96565;
+    }
+
+    b,
+    strong {
+        font-weight: 600;
+    }
+
+    samp {
+        display: none;
+    }
+
+    img {
+        /*    animation: colorize 2s cubic-bezier(0, 0, .78, .36) 1;*/
+        background: transparent;
+        /*    border: 10px solid rgba(0, 0, 0, 0.12);*/
+        border-radius: 4px;
+        display: block;
+        margin: 1.3em auto;
+        max-width: 95%;
+    }
+
+    @keyframes colorize {
+        0% {
+            -webkit-filter: grayscale(100%);
+            filter: grayscale(100%);
+        }
+
+        100% {
+            -webkit-filter: grayscale(0%);
+            filter: grayscale(0%);
+        }
+    }
+
+    button {
+        background-color: #E96565;
+        /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
+
+    button:disabled,
+    button[disabled] {
+        background-color: #323232;
+        color: #666666;
+    }
+
+    .select-style {
+        border: 1px solid #ccc;
+        width: 120px;
+        border-radius: 3px;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+    .select-style select {
+        padding: 5px 8px;
+        width: 130%;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        background-image: none;
+        -webkit-appearance: none;
+    }
+
+    .select-style select:focus {
+        outline: none;
+    }
+
+    div {
+        padding-top: 1px;
+        padding-right: 0px;
+        padding-bottom: 1px;
+        padding-left: 30px;
+    }
+</style>
+<script>
+
+    function draw(rows, columns, arr, breakUpBy) {
+
+        var scale = 30;
+        var size = 28;
+        var leftHandCount = 0;
+        var count = 0;
+        var ctx = document.getElementById('canvas').getContext('2d');
+        for (var i = 0; i < rows * 2; i++) {
+            for (var j = 0; j < columns; j++) {
+                
+                //Pick color
+                if (count < breakUpBy) {
+                    if (arr[i / 2][j] == 2) {                    //Right
+                        ctx.fillStyle = 'rgb(55, 238, 183)';
+                    } else if (arr[i / 2][j] == 3) {             //Both
+                        ctx.fillStyle = 'rgb(233, 101, 101)';
+                    } else if (arr[i / 2][j] == 1) {             //Left
+                        ctx.fillStyle = 'rgb(255, 255, 0)';
+                    } else {                                //None
+                        ctx.fillStyle = 'rgb(169, 169, 169)';
+                    }
+                    count++;;
+                } else if (count == breakUpBy) {
+                    ctx.fillStyle = 'rgb(50, 50, 50)';
+                    count = 0;
+                    ctx.fillRect(leftHandCount * scale, i * scale, size, size);
+                    leftHandCount++;
+                    if (arr[i / 2][j] == 2) {                    //Right
+                        ctx.fillStyle = 'rgb(55, 238, 183)';
+                    } else if (arr[i / 2][j] == 3) {             //Both
+                        ctx.fillStyle = 'rgb(233, 101, 101)';
+                    } else if (arr[i / 2][j] == 1) {             //Left
+                        ctx.fillStyle = 'rgb(255, 255, 0)';
+                    } else {                                //None
+                        ctx.fillStyle = 'rgb(169, 169, 169)';
+                    }
+                    count++;
+                }
+
+                ctx.fillRect(leftHandCount * scale, i * scale, size, size);
+                leftHandCount++;
+                // if (count == 0){
+                //     leftHandCount++;
+                // }
+            }
+            i++;
+            //Add break
+            leftHandCount = 0;
+            count = 0;
+        }
+    }
+
+    function resetTable() {
+        const context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function setTable() {
+        resetTable();
+
+        var y = document.getElementById('Rhythm 1').value;
+        var x = document.getElementById('Rhythm 2').value;
+        var b = document.getElementById('Selection').value;
+
+        //Declare variables
+        var columns = y;
+        var rows = x;
+        var groups = 0;
+        var remainder = false;
+        var beats = new Array(rows);
+
+        //Determine groupings
+        if (columns % 2 == 0) {
+            groups = columns / 2;
+            remainder = false;
+        }
+        else {
+            groups = (columns - 1) / 2;
+            remainder = true;
+        }
+
+        //Instantiate beats 2d array
+        i = 0;
+        j = 0;
+
+        for (i = 0; i < rows; i++) {
+            beats[i] = new Array(columns);
+        }
+
+        //Set values in 2d array
+        count1 = 0;
+        count2 = 0;
+        for (i = 0; i < rows; i++) {
+            for (j = 0; j < columns; j++) {
+                if (count1 == 0 && count2 == 0) {
+                    beats[i][j] = 3;
+                } else if (count1 == 0) {
+                    beats[i][j] = 2;
+                } else if (count2 == 0) {
+                    beats[i][j] = 1;
+                } else {
+                    beats[i][j] = 0;
+                }
+                count1++;
+                count2++;
+                if (count1 == columns) {
+                    count1 = 0;
+                } if (count2 == rows) {
+                    count2 = 0;
+                }
+            }
+        }
+
+        //Get printable string
+        s = "";
+        i = 0;
+        j = 0;
+        breakCounter = 0;
+        for (i = 0; i < rows; i++) {
+            for (j = 0; j < columns; j++) {
+                s += beats[i][j];
+                breakCounter++;
+                if (breakCounter == 2) {
+                    s += " ";
+                }
+                if (breakCounter == 2) {
+                    breakCounter = 0;
+                }
+            }
+            breakCounter = 0;
+            s += "<br>";
+        }
+
+        // document.getElementById("Main").innerHTML = s;
+
+        draw(rows, columns, beats, b);
+    }
+
+</script>
+
+<body bgcolor="#323232" onload="setTable()">
+    <h1>
+        <font color="white">
+            Welcome to the Logical Interface for Conceptualizing Cross-rhythms </font>
+        <font color="adadad">(the LICC, for short)<font color="white">.</font>
+        </font>
+    </h1>
+
+    <h2>
+        <font color="gray">
+            Just enter your two rhythms and the note grouping to get started.
+        </font>
+    </h2>
+    <h4>
+        <font color="#646464">
+            Inspired by Adam Neely's video "7:11 Polyrhythms" (<a target="_blank" href="https://www.youtube.com/watch?v=U9CgR2Y6XO4">https://www.youtube.com/watch?v=U9CgR2Y6XO4</a>).
+            <br>
+            Contact me at <u>macosta1625@gmail.com</u> with any issues, questions, fun facts
+        </font>
+    </h4>
+
+    <div id="info" style="background-color:#646464">
+        <h4>
+            <b>
+                <font color='#e96565'>Red: </font>
+            </b>
+            <font color="white"> Both rhythm coincide </font>
+        </h4>
+        <h4>
+            <b>
+                <font color='#ffff00'>Yellow: </font>
+            </b>
+            <font color="white"> Rhythm 1 </font>
+        </h4>
+        <h4>
+            <b>
+                <font color='#37eeb7'>Green: </font>
+            </b>
+            <font color="white"> Rhythm 2 </font>
+        </h4>
+    </div>
+
+    <br>
+
+    <b>
+        <font color="#ffff00">
+            <form id="Main form">
+                Rhythm 1: <input type="text" id="Rhythm 1" value="7">
+                <br>
+        </font>
+
+        (against)
+        <br>
+        <font color="#37eeb7">
+            Rhythm 2: <input type="text" id="Rhythm 2" value="11">
+            <br>
+            </form>
+        </font>
+        <font color="white">
+            Grouping:
+        </font>
+        <select id="Selection" class="select-style">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+    </b>
+    <p id="Main"></p>
+
+    <button id="Action Button" onclick="setTable()">
+        Get jamming
+    </button>
+
+    <br><br>
+
+    <canvas id="canvas" width="1000" , height="1000">
+
+    </canvas>
+
+
+</body>
+
+</html>
